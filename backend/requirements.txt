@@ -24,3 +24,7 @@ pydantic>=2.4
 
 # Uvicorn for ASGI server
 uvicorn
+
+# Testing
+pytest>=8.0
+pytest-django>=4.8
