@@ -41,6 +41,15 @@ Quick start for running the app with Docker Compose.
 
 To stop: `Ctrl+C`, then `docker compose -f docker-compose.dev.yml down` if you want to remove containers.
 
+
+## Running tests
+
+You can run tests inside docker compose using:
+
+```bash
+docker compose -f docker-compose.dev.yml exec backend python -m pytest
+```
+
 ## Deployment Strategy on AWS
 
 - Full deployment and CI/CD: [docs/deployment.md](docs/deployment.md)
