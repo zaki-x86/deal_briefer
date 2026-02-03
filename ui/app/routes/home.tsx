@@ -1,11 +1,12 @@
 import type { Route } from "./+types/home";
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { useSearchParams } from "react-router";
 import type { Deal } from "../types/Deal";
 import { apiUrl, buildDealsQuery, type DealsListParams } from "../lib/api";
 import { DealTable } from "../components/DealTable";
 import { DealsToolbar } from "../components/DealsToolbar";
 import { Pagination } from "../components/Pagination";
+import { CreateBriefModal } from "../components/CreateBriefModal";
 import { LoadingSpinner } from "../components/LoadingSpinner";
 import { ErrorMessage } from "../components/ErrorMessage";
 
@@ -55,6 +56,8 @@ export default function Home() {
   const [totalCount, setTotalCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [createModalOpen, setCreateModalOpen] = useState(false);
+  const fetchParamsRef = useRef(params);
 
   const setParams = useCallback(
     (next: DealsListParams) => {
@@ -63,29 +66,33 @@ export default function Home() {
     [setSearchParams]
   );
 
-  useEffect(() => {
-    const fetchDeals = async () => {
-      setLoading(true);
-      setError(null);
-      const query = buildDealsQuery(params);
+  const fetchDeals = useCallback(async () => {
+    const p = fetchParamsRef.current;
+    setLoading(true);
+    setError(null);
+    const query = buildDealsQuery(p);
+    try {
       const response = await fetch(apiUrl(`/api/deals/${query}`), {
         credentials: "include",
       });
       if (!response.ok) {
         setError("Failed to fetch deals");
-        setLoading(false);
         return;
       }
       const data = await response.json();
       setDeals(data.results ?? []);
       setTotalCount(data.count ?? 0);
-      setLoading(false);
-    };
-    fetchDeals().catch((err) => {
+    } catch (err) {
       console.error(err);
       setError("Failed to fetch deals");
+    } finally {
       setLoading(false);
-    });
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchParamsRef.current = params;
+    fetchDeals();
   }, [
     params.page,
     params.search,
@@ -95,7 +102,13 @@ export default function Home() {
     params.stage,
     params.category,
     params.ordering,
+    fetchDeals,
   ]);
+
+  const handleCreateSuccess = useCallback(() => {
+    fetchParamsRef.current = params;
+    fetchDeals();
+  }, [params, fetchDeals]);
 
   if (loading && deals.length === 0) {
     return (
@@ -126,14 +139,29 @@ export default function Home() {
   return (
     <main className="min-h-screen bg-gray-50 dark:bg-gray-950">
       <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
-        <header className="mb-6">
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-            Deals
-          </h1>
-          <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
-            Search and filter, then click a row to view deal details.
-          </p>
+        <header className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+              Deals
+            </h1>
+            <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
+              Search and filter, then click a row to view deal details.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={() => setCreateModalOpen(true)}
+            className="shrink-0 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-950"
+          >
+            Create brief
+          </button>
         </header>
+
+        <CreateBriefModal
+          open={createModalOpen}
+          onClose={() => setCreateModalOpen(false)}
+          onSuccess={handleCreateSuccess}
+        />
 
         <div className="space-y-4">
           <DealsToolbar params={params} onParamsChange={setParams} />
