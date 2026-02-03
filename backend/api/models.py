@@ -10,7 +10,7 @@ class Deal(models.Model):
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     input_hash = models.CharField(max_length=64, unique=True)
-    raw_text = models.TextField()
+    raw_text = models.TextField(max_length=10000)
     extracted_json = models.JSONField(null=True, blank=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="pending")
     last_error = models.TextField(null=True, blank=True)
