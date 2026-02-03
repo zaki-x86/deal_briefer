@@ -13,11 +13,11 @@ class DealBrieferSvc:
         self.brief_generator = brief_generator
     
     def create_brief(self, raw_text: str) -> Deal:
-        deal = Deal.objects.create(raw_text=raw_text)
-        deal.input_hash = self._hash_text(self._normalize_text(raw_text))
-        existing = Deal.objects.filter(input_hash=deal.input_hash).first()
+        input_hash = self._hash_text(self._normalize_text(raw_text))
+        existing = Deal.objects.filter(input_hash=input_hash).first()
         if existing:
             raise DuplicatedDealError("Deal with this input hash already exists.")
+        deal = Deal.objects.create(raw_text=raw_text, input_hash=input_hash)
         try:
             result = self.brief_generator.generate_brief(raw_text)
             if result.success:
