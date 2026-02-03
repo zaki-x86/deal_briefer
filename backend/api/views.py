@@ -1,14 +1,20 @@
 from rest_framework import viewsets
 from .models import Deal
 from .serializers import DealSerializer, CreateDealSerializer
+from .filters import DealFilter
 from rest_framework.response import Response
 from services.deal_briefer import DealBrieferSvc, DuplicatedDealError
 from services.llm import DealLLMBriefer
 from traceback import print_exc
 
+
 class DealViewSet(viewsets.ModelViewSet):
     queryset = Deal.objects.all().order_by("-created_at")
     serializer_class = DealSerializer
+    filterset_class = DealFilter
+    search_fields = ["raw_text"]
+    ordering_fields = ["created_at", "updated_at", "status"]
+    ordering = ["-created_at"]
 
     def get_serializer_class(self):
         if self.action == "create":
