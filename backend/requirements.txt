@@ -1,5 +1,6 @@
 Django>=4.3
 djangorestframework
+django-cors-headers
 
 # PostgreSQL driver
 psycopg2-binary>=2.9
