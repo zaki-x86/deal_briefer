@@ -1,0 +1,24 @@
+Django>=4.3
+djangorestframework
+
+# PostgreSQL driver
+psycopg2-binary>=2.9
+
+# UUID and sortable ID helpers
+django-uuidfield
+django-sortedm2m
+
+# Config lib
+python-decouple
+
+# HTTP client
+httpx
+
+# LLM helpers
+google-genai
+
+# Misc utilities
+pydantic>=2.4
+
+# Uvicorn for ASGI server
+uvicorn
