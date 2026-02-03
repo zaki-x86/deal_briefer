@@ -9,10 +9,60 @@ Assumptions:
 - The total users of this application won't exceed ~1000 users daily with 20 - 50 concurrent users.
 - Assumes IaC (Infrastructure as code) technology will be setup for this project such as: Terraform.
 - Assuming using self-hosted CI/CD runner for more generic instructions.
+- Assuming frontend will be developed on a separate repo - in this project, I have the frontend on the same repo for simplicity.
 
 To be able to scale our application on EC2, application needs to be **stateless** - meaning it can't store any data on machine, therefore, S3 will need to be utilized to store any files.
 
 In case of using any job orchestration for asynchronouse processing, it needs to be scaled independetly rather than attaching it to the same application to ensure atomcity.
+
+---
+
+## Frontend Deployment
+
+Frontend deployment given the assumed scale is preferred to be deployed on S3 static website hosting.
+
+![](../assets/react-cicd.png)
+
+### S3 Bucket settings
+
+* Bucket name: deal-briefer-react-prod
+* Region: same as CI/CD (recommended)
+* Block public access: ON (initially)
+
+### Enable Static Website Hosting
+
+- Enable Static website hosting
+* Index document: index.html
+* Error document: index.html (important for React routing)
+
+### Setup bucket policy
+
+```
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "PublicRead",
+      "Effect": "Allow",
+      "Principal": "*",
+      "Action": "s3:GetObject",
+      "Resource": "arn:aws:s3:::deal-briefer-react-prod/*"
+    }
+  ]
+}
+```
+
+### Cloudfront or Cloudflare
+
+Needed for HTTPs supprt, caching support, and security.
+
+### CI/CD Flow
+
+1. Checkout code
+2. Install dependencies
+3. Build React app
+4. Upload to S3
+5. Invalidate CloudFront/Cloudflare cache
 
 ---
 
